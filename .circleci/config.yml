@@ -6,21 +6,21 @@ jobs:
         image: "circleci/node:13.8.0"
     steps: 
       - 
-        run: "echo \"This is Analyze\""
+        run: "echo My pipeline id is << pipeline.id >> and my git branch is << pipeline.git.branch >>."
   build: 
     docker: 
       - 
         image: "circleci/node:13.8.0"
     steps: 
       - 
-        run: "echo This is Build"
+        run: "echo My pipeline git url is << pipeline.project.git_url >> and project type is << pipeline.project.type>>."
   test: 
     docker: 
       - 
         image: "circleci/node:13.8.0"
     steps: 
       - 
-        run: "echo This is Test"
+        run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
 version: 2.1
 workflows: 
   CICD: 
