@@ -50,12 +50,36 @@ jobs:
           at: ~/
       - 
         run: "cat ~/output.txt"
+jobs: 
+  inventoryjob: 
+    docker: 
+      - 
+        image: amazon/aws-cli
+    steps: 
+      - checkout
+      - 
+        run: 
+          command: |
+              aws ec2 describe-instances \
+                --region us-west-2
+                --query "Reservations[*].Instances[*].PublicIpAddress" \
+                --output text >> .circleci/ansible/inventory.txt
+          name: "Add EC2 instance IP in inventory"
+      - 
+        persist_to_workspace: 
+          paths: 
+            - project/.circleci/ansible/inventory.txt
+          root: ~/
+          
 # workflows ##################################   
 version: 2.1
 workflows: 
   CICD: 
     jobs: 
-      - build
+      - inventoryjob
+      - build:
+          requires:
+            - inventoryjob
       - 
         test: 
           requires: 
