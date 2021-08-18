@@ -1,58 +1,38 @@
---- 
-jobs: 
-  analyze: 
-    docker: 
-      - 
-        image: "circleci/node:13.8.0"
-    steps: 
-      - 
-        run: "echo My pipeline id is << pipeline.id >> and my git branch is << pipeline.git.branch >>."
-  build: 
-    docker: 
-      - 
-        image: "cimg/base:2020.01"
-    steps: 
-      - checkout
-      - 
-        run: 
-          command: "echo $CircleCI_Env_Variable"
-          name: "echo an env var that is part of our project"
-      - 
-        save_cache: 
-          key: "v1-my-project-{{ checksum \"project.clj\" }}"
-          paths: 
-            - ~/.m2
-      - 
-        persist_to_workspace: 
-          paths: 
-            - target/application.jar
-            - build/*
-          root: /tmp/workspace
-      - 
-        run: "echo My pipeline git url is << pipeline.project.git_url >> and project type is << pipeline.project.type>>."
-  test: 
-    docker: 
-      - 
-        image: "circleci/node:13.8.0"
-    steps: 
-      - 
-        run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
-      - 
-        attach_workspace: 
-          at: /tmp/workspace
-      - 
-        attach_workspace: 
-          at: /tmp/workspace
+Solution: Sharing Files
+Solution: Sharing Files
+Replay
+Mute
+Remaining Time -0:00
+1.25xPlayback RatePicture-in-Picture
+
+Fullscreen
+Your config.yml should look something like this:
+
 version: 2.1
-workflows: 
-  CICD: 
-    jobs: 
-      - build
-      - 
-        test: 
-          requires: 
-            - build
-      - 
-        analyze: 
-          requires: 
-            - test
+
+jobs:
+  save_hello_world_output:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - run: echo "hello world" > ~/output.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - output.txt
+
+  print_output_file:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: cat ~/output.txt
+
+workflows:
+  my_workflow:
+    jobs:
+      - save_hello_world_output
+      - print_output_file:
+          requires:
+            - save_hello_world_output
