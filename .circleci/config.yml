@@ -10,8 +10,13 @@ jobs:
   build: 
     docker: 
       - 
-        image: "circleci/node:13.8.0"
+        image: "cimg/base:2020.01"
     steps: 
+      - checkout
+      - 
+        run: 
+          command: "echo CircleCI_Env_Variable\n"
+          name: "echo an env var that is part of our project"
       - 
         run: "echo My pipeline git url is << pipeline.project.git_url >> and project type is << pipeline.project.type>>."
   test: 
