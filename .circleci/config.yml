@@ -1,38 +1,33 @@
-Solution: Sharing Files
-Solution: Sharing Files
-Replay
-Mute
-Remaining Time -0:00
-1.25xPlayback RatePicture-in-Picture
-
-Fullscreen
-Your config.yml should look something like this:
-
-version: 2.1
-
-jobs:
-  save_hello_world_output:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - run: echo "hello world" > ~/output.txt
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - output.txt
-
-  print_output_file:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - attach_workspace:
+--- 
+jobs: 
+  print_output_file: 
+    docker: 
+      - 
+        image: "circleci/node:13.8.0"
+    steps: 
+      - 
+        attach_workspace: 
           at: ~/
-      - run: cat ~/output.txt
-
-workflows:
-  my_workflow:
-    jobs:
+      - 
+        run: "cat ~/output.txt"
+  save_hello_world_output: 
+    docker: 
+      - 
+        image: "circleci/node:13.8.0"
+    steps: 
+      - 
+        run: "echo \"hello world\" > ~/output.txt"
+      - 
+        persist_to_workspace: 
+          paths: 
+            - output.txt
+          root: ~/
+version: 2.1
+workflows: 
+  my_workflow: 
+    jobs: 
       - save_hello_world_output
-      - print_output_file:
-          requires:
+      - 
+        print_output_file: 
+          requires: 
             - save_hello_world_output
