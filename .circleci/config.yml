@@ -1,20 +1,35 @@
 --- 
 jobs: 
-  print_output_file: 
+
+
+# test ##################################     
+
+  test: 
     docker: 
       - 
         image: "circleci/node:13.8.0"
     steps: 
       - 
-        attach_workspace: 
-          at: ~/
-      - 
-        run: "cat ~/output.txt"
-  save_hello_world_output: 
+        run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
+
+# build ##################################
+  build: 
     docker: 
       - 
-        image: "circleci/node:13.8.0"
+        image: "cimg/base:2020.01"
     steps: 
+      - checkout
+      - 
+        run: 
+          command: "echo $CircleCI_Env_Variable"
+          name: "echo an env var that is part of our project"
+      - 
+        save_cache: 
+          key: "v1-my-project-{{ checksum \"project.clj\" }}"
+          paths: 
+            - ~/.m2
+      - 
+        run: "echo My pipeline git url is << pipeline.project.git_url >> and project type is << pipeline.project.type>>."
       - 
         run: "echo \"hello world\" > ~/output.txt"
       - 
@@ -22,12 +37,30 @@ jobs:
           paths: 
             - output.txt
           root: ~/
+# analyze ##################################
+  analyze: 
+    docker: 
+      - 
+        image: "circleci/node:13.8.0"
+    steps: 
+      - 
+        run: "echo My pipeline id is << pipeline.id >> and my git branch is << pipeline.git.branch >>."
+      - 
+        attach_workspace: 
+          at: ~/
+      - 
+        run: "cat ~/output.txt"
+# workflows ##################################   
 version: 2.1
 workflows: 
-  my_workflow: 
+  CICD: 
     jobs: 
-      - save_hello_world_output
+      - build
       - 
-        print_output_file: 
+        test: 
           requires: 
-            - save_hello_world_output
+            - build
+      - 
+        analyze: 
+          requires: 
+            - test
