@@ -15,8 +15,13 @@ jobs:
       - checkout
       - 
         run: 
-          command: echo $CircleCI_Env_Variable
+          command: "echo $CircleCI_Env_Variable"
           name: "echo an env var that is part of our project"
+      - 
+        save_cache: 
+          key: "v1-my-project-{{ checksum \"project.clj\" }}"
+          paths: 
+            - ~/.m2
       - 
         run: "echo My pipeline git url is << pipeline.project.git_url >> and project type is << pipeline.project.type>>."
   test: 
@@ -26,6 +31,9 @@ jobs:
     steps: 
       - 
         run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
+      - 
+        attach_workspace: 
+          at: /tmp/workspace
 version: 2.1
 workflows: 
   CICD: 
