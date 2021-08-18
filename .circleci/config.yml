@@ -1,23 +1,74 @@
-version: 2.1
-
-commands:
-  print_pipeline_id:
-    parameters: 
-      id: 
-        type: string
+--- 
+jobs: 
+########################################################
+  analyze: 
+    docker: 
+      - 
+        image: "circleci/node:13.8.0"
     steps: 
       - 
-        run: "echo << parameters.id >>"
-
-jobs:
-  my_job:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - print_pipeline_id:
-          id: << pipeline.id >>
-
-workflows:
-  my_workflow:
-    jobs:
-      - my_job
+        run: "echo My pipeline id is << pipeline.id >> and my git branch is << pipeline.git.branch >>."
+      - 
+        attach_workspace: 
+          at: ~/
+      - 
+        run: "cat ~/output.txt"
+########################################################
+  build: 
+    docker: 
+      - 
+        image: "cimg/base:2020.01"
+    steps: 
+      - checkout
+      - 
+        run: 
+          command: "echo $CircleCI_Env_Variable"
+          name: "echo an env var that is part of our project"
+      - 
+        save_cache: 
+          key: "v1-my-project-{{ checksum \"project.clj\" }}"
+          paths: 
+            - ~/.m2
+      - 
+        run: "echo My pipeline git url is << pipeline.project.git_url >> and project type is << pipeline.project.type>>."
+      - 
+        run: "echo \"hello world\" > ~/output.txt"
+      - 
+        persist_to_workspace: 
+          paths: 
+            - output.txt
+          root: ~/
+########################################################
+  inventoryjob: 
+    docker: 
+      - 
+        image: amazon/aws-cli
+    steps: 
+      - 
+        run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
+########################################################
+  test: 
+    docker: 
+      - 
+        image: "circleci/node:13.8.0"
+    steps: 
+      - 
+        run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
+########################################################
+version: 2.1
+workflows: 
+  CICD: 
+    jobs: 
+      - inventoryjob
+      - 
+        build: 
+          requires: 
+            - inventoryjob
+      - 
+        test: 
+          requires: 
+            - build
+      - 
+        analyze: 
+          requires: 
+            - test
