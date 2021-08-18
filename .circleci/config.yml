@@ -15,7 +15,7 @@ jobs:
       - checkout
       - 
         run: 
-          command: "echo CircleCI_Env_Variable\n"
+          command: echo $CircleCI_Env_Variable
           name: "echo an env var that is part of our project"
       - 
         run: "echo My pipeline git url is << pipeline.project.git_url >> and project type is << pipeline.project.type>>."
