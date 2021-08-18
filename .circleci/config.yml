@@ -7,24 +7,21 @@ commands:
     steps: 
       - 
         run: "echo << parameters.id >>"
-
 jobs: 
-
-
-# test ##################################     
-
-  test: 
+######################################################
+  analyze: 
     docker: 
       - 
         image: "circleci/node:13.8.0"
     steps: 
       - 
-        run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
+        run: "echo My pipeline id is << pipeline.id >> and my git branch is << pipeline.git.branch >>."
       - 
-        print_pipeline_id: "id: << pipeline.id >>"
-
-
-# build ##################################
+        attach_workspace: 
+          at: ~/
+      - 
+        run: "cat ~/output.txt"
+######################################################
   build: 
     docker: 
       - 
@@ -49,48 +46,33 @@ jobs:
           paths: 
             - output.txt
           root: ~/
-# analyze ##################################
-  analyze: 
-    docker: 
-      - 
-        image: "circleci/node:13.8.0"
-    steps: 
-      - 
-        run: "echo My pipeline id is << pipeline.id >> and my git branch is << pipeline.git.branch >>."
-      - 
-        attach_workspace: 
-          at: ~/
-      - 
-        run: "cat ~/output.txt"
-# inventory job ###########################
+######################################################
   inventoryjob: 
     docker: 
       - 
         image: amazon/aws-cli
     steps: 
-      - checkout
       - 
-        run: 
-          command: |
-              aws ec2 describe-instances \
-                --region us-west-2
-                --query "Reservations[*].Instances[*].PublicIpAddress" \
-                --output text >> .circleci/ansible/inventory.txt
-          name: "Add EC2 instance IP in inventory"
+        run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
+######################################################
+  test: 
+    docker: 
       - 
-        persist_to_workspace: 
-          paths: 
-            - project/.circleci/ansible/inventory.txt
-          root: ~/
-          
-# workflows ##################################   
+        image: "circleci/node:13.8.0"
+    steps: 
+      - 
+        run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
+      - 
+        print_pipeline_id: "id: << pipeline.id >>"
+######################################################
 version: 2.1
 workflows: 
   CICD: 
     jobs: 
       - inventoryjob
-      - build:
-          requires:
+      - 
+        build: 
+          requires: 
             - inventoryjob
       - 
         test: 
