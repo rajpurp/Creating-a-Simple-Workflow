@@ -23,12 +23,14 @@ jobs:
         run: "echo This is Test"
 version: 2.1
 workflows: 
-  CICI: 
+  CICD: 
     jobs: 
       - build
       - 
         test: 
-          requires: build
+          requires: 
+            - build
       - 
         analyze: 
-          requires: test
+          requires: 
+            - test
