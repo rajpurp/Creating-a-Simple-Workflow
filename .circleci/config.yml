@@ -23,6 +23,12 @@ jobs:
           paths: 
             - ~/.m2
       - 
+        persist_to_workspace: 
+          paths: 
+            - target/application.jar
+            - build/*
+          root: /tmp/workspace
+      - 
         run: "echo My pipeline git url is << pipeline.project.git_url >> and project type is << pipeline.project.type>>."
   test: 
     docker: 
@@ -31,6 +37,9 @@ jobs:
     steps: 
       - 
         run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
+      - 
+        attach_workspace: 
+          at: /tmp/workspace
       - 
         attach_workspace: 
           at: /tmp/workspace
