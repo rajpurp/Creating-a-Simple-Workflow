@@ -85,16 +85,13 @@ jobs:
 ##############################################################
             
   inventoryjob: 
-    docker: 
-      - 
-        image: "circleci/node:13.8.0"
-    steps: 
+    docker:
+      - image: amazon/aws-cli
+    steps:
       - checkout
-      - run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
       - run:
-          name: on error
-          command: echo "Hello Error!"
-          when: on_fail
+          name: Install dependencies
+          command: yum install -y tar gzip
       - run:
           name: Add ansible inventory
           working_directory: ./.circleci/ansible
