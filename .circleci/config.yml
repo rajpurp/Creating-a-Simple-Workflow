@@ -13,7 +13,6 @@ commands:
         run: "echo << parameters.id >>"
         
 
-  
 jobs: 
 #########################################################
   aws-cli-example:
@@ -113,12 +112,8 @@ jobs:
 workflows: 
   CICD: 
     jobs: 
-      - aws-cli-example:
-          context: aws
       - 
-        inventoryjob:
-          requires:
-            - aws-cli-example
+        inventoryjob
       - 
         build: 
           requires: 
