@@ -1,14 +1,29 @@
 --- 
-commands: 
-  print_pipeline_id: 
+version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@2.0.3
+  
+commands:
+  print_pipeline_id:
     parameters: 
       id: 
         type: string
     steps: 
       - 
         run: "echo << parameters.id >>"
+        
+
 jobs: 
-########################################################
+#########################################################
+  aws-cli-example:
+    executor: aws-cli/default
+    steps:
+      - checkout
+      - aws-cli/setup:
+          profile-name: example
+      - run: echo "Run your code here"
+      
+###################################
   analyze: 
     docker: 
       - 
@@ -21,6 +36,10 @@ jobs:
           at: ~/
       - 
         run: "cat ~/output.txt"
+      - run:
+          name: on error
+          command: echo "Hello Error!"
+          when: on_fail
 ########################################################
   build: 
     docker: 
@@ -46,14 +65,45 @@ jobs:
           paths: 
             - output.txt
           root: ~/
+      - run:
+          name: on error
+          command: echo "Hello Error!"
+          when: on_fail
 ########################################################
+  cloudfront-update:
+     docker:
+       - image: amazon/aws-cli
+     steps:
+      # Checkout code from git
+       - checkout
+       - run:
+          name: Install dependencies
+          command: |
+            yum install -y tar gzip curl
+            curl -sL https://rpm.nodesource.com/setup_10.x | bash -
+            yum install -y nodejs
+##############################################################
+            
   inventoryjob: 
-    docker: 
-      - 
-        image: amazon/aws-cli
-    steps: 
-      - 
-        run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: yum install -y tar gzip
+      - run:
+          name: Add ansible inventory
+          working_directory: ./.circleci/ansible
+          command: |
+            aws ec2 describe-instances --region us-east-2 --query "Reservations[*].Instances[*].PublicIpAddress" --filters "Name=tag:CICD_EC2,Values=CICD_EC2_1" --output text  >> inventory.txt
+            cat inventory.txt 
+              
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .circleci/ansible/inventory.txt
+            
 ########################################################
   test: 
     docker: 
@@ -62,15 +112,22 @@ jobs:
     steps: 
       - 
         run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
-      - 
-        print_pipeline_id: |
+      - print_pipeline_id:
           id: << pipeline.id >>
+      - run:
+          name: on error
+          command: echo "Hello Error!"
+          when: on_fail
 ########################################################
-version: 2.1
+
 workflows: 
   CICD: 
     jobs: 
-      - inventoryjob
+      - cloudfront-update
+      - 
+        inventoryjob:
+          requires:
+            - cloudfront-update
       - 
         build: 
           requires: 
