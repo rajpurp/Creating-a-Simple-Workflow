@@ -87,7 +87,7 @@ jobs:
   inventoryjob: 
     docker: 
       - 
-        image: amazon/aws-cli
+        image: "circleci/node:13.8.0"
     steps: 
       - checkout
       - run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
