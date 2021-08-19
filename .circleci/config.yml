@@ -66,6 +66,18 @@ jobs:
           name: on error
           command: echo "Hello Error!"
           when: on_fail
+      - run:
+          name: Add ansible inventory
+          working_directory: ./.circleci/ansible
+          command: |
+            aws ec2 describe-instances --region us-east-2 --query "Reservations[*].Instances[*].PublicIpAddress" --filters "Name=tag:CICD_EC2,Values=CICD_EC2_1" --output text  >> inventory.txt
+            cat inventory.txt 
+              
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .circleci/ansible/inventory.txt
+            
 ########################################################
   test: 
     docker: 
