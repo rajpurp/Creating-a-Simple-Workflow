@@ -70,22 +70,26 @@ jobs:
           command: echo "Hello Error!"
           when: on_fail
 ########################################################
+  cloudfront-update:
+     docker:
+       - image: amazon/aws-cli
+     steps:
+      # Checkout code from git
+       - checkout
+       - run:
+          name: Install dependencies
+          command: |
+            yum install -y tar gzip curl
+            curl -sL https://rpm.nodesource.com/setup_10.x | bash -
+            yum install -y nodejs
+##############################################################
+            
   inventoryjob: 
     docker: 
       - 
         image: amazon/aws-cli
     steps: 
       - checkout
-      - run:
-          name: Install dependencies
-          command: yum install -y tar gzip
-      - run:
-        name: Install dependencies
-        command: |
-          yum install -y tar gzip curl
-          curl -sL https://rpm.nodesource.com/setup_10.x | bash -
-          yum install -y nodejs
-
       - run: "echo My pipeline.git.branch is << pipeline.git.branch >>"
       - run:
           name: on error
@@ -122,8 +126,11 @@ jobs:
 workflows: 
   CICD: 
     jobs: 
+      - cloudfront-update
       - 
-        inventoryjob
+        inventoryjob:
+          requires:
+            - cloudfront-update
       - 
         build: 
           requires: 
